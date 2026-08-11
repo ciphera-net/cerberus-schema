@@ -7,6 +7,10 @@ when:
     branch: main
   - event: pull_request
   - event: tag
+  # * manual, so the pipeline can be re-run by hand. This repository's own history is the argument:
+  # * two scheduled/added CI steps in the estate shipped without ever being run and both were
+  # * broken, so being able to trigger a run on demand is not a convenience.
+  - event: manual
 
 steps:
   contract:
