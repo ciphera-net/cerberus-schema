@@ -1,0 +1,139 @@
+{
+  "name": "dedup unit: session_first_event \u2014 the same substrate, one row per session",
+  "why": "IDENTICAL observations to the previous vector, and the only change is the declared unit. One row per session gives 0.5 rather than 0.7222 \u2014 two countries, two people, no concentration. Any adapter that ignores the unit produces the SAME answer for both vectors, which is exactly the bug, so a conformance suite carrying only one of these two files cannot see it.",
+  "now": "2026-08-11T00:00:00Z",
+  "observations": [
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "s-chatty",
+      "event_id": "chatty-2",
+      "timestamp": "2026-08-02T10:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "country": "DE",
+      "timezone": "Europe/Berlin"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "s-chatty",
+      "event_id": "chatty-3",
+      "timestamp": "2026-08-03T10:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "country": "DE",
+      "timezone": "Europe/Berlin"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "s-chatty",
+      "event_id": "chatty-4",
+      "timestamp": "2026-08-04T10:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "country": "DE",
+      "timezone": "Europe/Berlin"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "s-chatty",
+      "event_id": "chatty-5",
+      "timestamp": "2026-08-05T10:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "country": "DE",
+      "timezone": "Europe/Berlin"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "s-chatty",
+      "event_id": "chatty-6",
+      "timestamp": "2026-08-06T10:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "country": "DE",
+      "timezone": "Europe/Berlin"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "s-quiet",
+      "event_id": "quiet-1",
+      "timestamp": "2026-08-08T10:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "country": "FR",
+      "timezone": "Europe/Paris"
+    }
+  ],
+  "spec": {
+    "source": "arrival_stream",
+    "verdict_filter": "none",
+    "unit": "session_first_event",
+    "group_by": [
+      "device_cohort"
+    ],
+    "window": {
+      "days": 10,
+      "boundary": "inclusive_exclusive",
+      "clock": "utc"
+    },
+    "require_fields": [],
+    "aggregate": "hhi",
+    "min_units": 2
+  },
+  "expect": {
+    "unreachable": false,
+    "groups": [
+      {
+        "key": "Chrome|Linux|desktop|en-US|1920x1080",
+        "units": 2,
+        "value": 0.5,
+        "sessions": [
+          "site-1|s-chatty",
+          "site-1|s-quiet"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "name": "require_fields timezone_resolvable: unresolvable zones are DROPPED, not fatal",
+  "why": "In PostgreSQL 16, AT TIME ZONE on a zone the server does not know ABORTS THE QUERY \u2014 it does not skip the row \u2014 so an adapter that renders this naively turns one browser-supplied junk zone into zero results for the whole scan. Dropping is the only behaviour that degrades safely. Two of the five rows survive: the modern spelling, and a LEGACY alias, because one legacy zone name covered 133 production sessions and was invisible to every timezone rule that listed only the modern one. The empty-string zone and the absent zone take DIFFERENT code paths and both must drop.",
+  "now": "2026-08-11T00:00:00Z",
+  "observations": [
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "tz-modern",
+      "event_id": "tz-1",
+      "timestamp": "2026-08-03T10:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "timezone": "Europe/Brussels"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "tz-legacy",
+      "event_id": "tz-2",
+      "timestamp": "2026-08-03T11:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "timezone": "Asia/Calcutta"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "tz-bogus",
+      "event_id": "tz-3",
+      "timestamp": "2026-08-03T12:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "timezone": "Mars/Phobos"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "tz-empty",
+      "event_id": "tz-4",
+      "timestamp": "2026-08-03T13:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "timezone": ""
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "tz-absent",
+      "event_id": "tz-5",
+      "timestamp": "2026-08-03T14:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080"
+    }
+  ],
+  "spec": {
+    "source": "arrival_stream",
+    "verdict_filter": "none",
+    "unit": "event",
+    "group_by": [
+      "site"
+    ],
+    "window": {
+      "days": 10,
+      "boundary": "inclusive_exclusive",
+      "clock": "utc"
+    },
+    "require_fields": [
+      "timestamp",
+      "timezone_resolvable"
+    ],
+    "aggregate": "distinct_count",
+    "min_units": 1
+  },
+  "expect": {
+    "unreachable": false,
+    "groups": [
+      {
+        "key": "site-1",
+        "units": 2,
+        "value": 2.0,
+        "sessions": [
+          "site-1|tz-legacy",
+          "site-1|tz-modern"
+        ]
+      }
+    ]
+  }
+}

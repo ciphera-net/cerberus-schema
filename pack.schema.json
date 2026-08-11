@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ciphera-net/cerberus-schema/pack.schema.json",
+  "title": "Cerberus rule pack",
+  "description": "The SHAPE of a rule pack. A pack is a parameterisation of a CLOSED registry of named detector types — Suricata/Sigma shape, not eBPF shape — and this schema describes the parameterisation without carrying any deployment's values. There is deliberately no example threshold, token list, allowlist or honeypot prefix anywhere in this file: a numeric bar's evasion cost is a parameter change, one-time and zero-marginal, so publishing one is pure loss. A pack conforming to this schema is expected to live in a private repository.",
+  "type": "object",
+  "required": ["version", "detectors"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "The pack version. Stamped on every ledger row as a CONTENT HASH by the loader, not taken on trust from this field: a pack whose recorded version does not identify its contents makes every historical verdict unreproducible."
+    },
+    "description": { "type": "string" },
+    "detectors": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/detector" }
+    },
+    "secret": {
+      "type": "object",
+      "description": "Values excluded from every dump, log line and error message. Per-site allowlists, honeypot prefixes and any other value whose disclosure is a bypass live here. The loader must be able to render a whole pack for debugging WITHOUT this section — a redaction that has to be remembered at each call site is a redaction that will be forgotten at one of them.",
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "detector": {
+      "type": "object",
+      "required": ["id", "type", "class", "family", "evasion_class", "scan"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+        "type": {
+          "type": "string",
+          "description": "A value from the engine's CLOSED registry of detector types. A pack cannot define a new detector type — that would be a DSL, and a general expression language over event fields makes writing another 'this key did N of X in window W' counter the easiest thing in the system, which is the exact shape this design exists to remove."
+        },
+        "class": {
+          "type": "string",
+          "enum": ["declared", "constructive", "physical", "population", "cross_tenant", "circumstance"],
+          "description": "Enforcement mode, never a weight. `circumstance` may inform a finding and may NEVER convict at any multiplicity."
+        },
+        "family": {
+          "type": "string",
+          "description": "The independence key. Two items sharing a family are ONE item; without it, three restatements of a single observation look exactly like three corroborating detectors."
+        },
+        "independence_group": {
+          "type": "string",
+          "description": "Collapses families that are not independent OF EACH OTHER — two rules reading the same underlying distribution share a group even though their names differ, and a quorum must count them once."
+        },
+        "evasion_class": {
+          "type": "string",
+          "enum": ["recurring_money", "recurring_throughput", "structural_declaration", "parameter_change"],
+          "description": "What it costs an adversary to evade this detector, ONCE they know it exists. A detector whose class is `parameter_change` may not enter a public registry and does not count toward forward recall: publishing it hands over the value and buys nothing. This field is what makes that rule checkable rather than a convention."
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["off", "shadow", "enforce"],
+          "default": "shadow",
+          "description": "A new detector starts in `shadow`. `enforce` records a verdict AND acts on it."
+        },
+        "corroborator": {
+          "type": "boolean",
+          "description": "A corroborator supplies a SECOND independent family and may never convict alone. It must state its unit explicitly rather than inheriting the unit of whatever rule it is paired with — a corroborator's floors do not change meaning because the rule beside it counts something else."
+        },
+        "emission_baseline": {
+          "type": "object",
+          "description": "For any detector reasoning about the ABSENCE of a telemetry field: the rate at which the relevant platforms emit that field at all. Absence is not behaviour until you know the emission rate, and a detector without this may not reason about absence.",
+          "required": ["field"],
+          "additionalProperties": false,
+          "properties": {
+            "field": { "type": "string" },
+            "source": { "type": "string", "description": "How the baseline was measured, so a stale one is legible as stale." },
+            "measured_at": { "type": "string", "format": "date" }
+          }
+        },
+        "scan": { "$ref": "#/$defs/scan" },
+        "params": {
+          "type": "object",
+          "description": "The detector's numeric parameters. Values are a property of a DEPLOYMENT and are never published; this schema constrains only that they exist and are numbers.",
+          "additionalProperties": { "type": ["number", "string", "boolean"] }
+        }
+      }
+    },
+    "scan": {
+      "type": "object",
+      "description": "A ScanSpec: the closed, declarative grammar a detector uses to ask for evidence. Every enum here is closed, so a typo is a load error rather than a silently-empty scan.",
+      "required": ["source", "verdict_filter", "unit", "group_by", "window", "aggregate", "min_units"],
+      "additionalProperties": false,
+      "properties": {
+        "source": { "type": "string", "enum": ["arrival_stream", "accepted_only"] },
+        "verdict_filter": {
+          "type": "string",
+          "enum": ["none", "exclude_verdict"],
+          "description": "Every shipped rule uses `none`. A re-derivation that cannot see the rows it convicted revokes its own verdict the moment it runs."
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["event", "session", "session_first_event"],
+          "description": "🔴 LOAD-BEARING. Counting events where the rule means sessions pseudo-replicates a real visitor's engagement across many rows and drives a concentration statistic toward a conviction. That is a different rule, and it has shipped as a bug."
+        },
+        "group_by": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": ["device_cohort", "fingerprint", "site", "owner", "country", "timezone", "referrer_label"]
+          },
+          "description": "There is deliberately no key producing a (fingerprint, site) tuple. Cross-tenant reasoning may produce a COUNT; it must never produce a membership list."
+        },
+        "window": {
+          "type": "object",
+          "required": ["days", "boundary", "clock"],
+          "additionalProperties": false,
+          "properties": {
+            "days": { "type": "integer", "minimum": 1 },
+            "boundary": { "type": "string", "enum": ["inclusive_exclusive", "exclusive_inclusive"] },
+            "clock": { "type": "string", "enum": ["utc"] }
+          }
+        },
+        "require_fields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["timestamp", "timezone_resolvable", "country", "city", "duration", "scroll_depth", "referrer", "asn_class", "ua_class"]
+          },
+          "description": "Declaring an input lets the harness refuse to run outside the window in which that field is trustworthy, rather than returning a confident zero. `timezone_resolvable` is fail-closed: rows whose declared zone does not resolve are DROPPED, never fatal."
+        },
+        "aggregate": {
+          "type": "string",
+          "enum": ["rayleigh", "hhi", "distinct_count", "modal_share", "chain"]
+        },
+        "min_units": { "type": "integer", "minimum": 1 },
+        "chain_gap_seconds": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    }
+  }
+}

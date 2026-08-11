@@ -1,0 +1,135 @@
+{
+  "name": "dedup unit: event \u2014 one chatty session is counted five times",
+  "why": "THE MOST IMPORTANT VECTOR IN THIS MODULE. Six events across two sessions: five from one visitor in DE and one from another in FR. Counted as EVENTS the country concentration is (5/6)^2 + (1/6)^2 = 0.7222, which reads as a homogeneous cohort. It is not one \u2014 it is two people, one of whom clicked more. A rule that means sessions and scans events pseudo-replicates a real visitor's engagement across many rows and drives a concentration statistic toward a conviction. That is not a detail; it is a different rule, and it shipped as a bug in the engine this schema was extracted from.",
+  "now": "2026-08-11T00:00:00Z",
+  "observations": [
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "s-chatty",
+      "event_id": "chatty-2",
+      "timestamp": "2026-08-02T10:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "country": "DE",
+      "timezone": "Europe/Berlin"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "s-chatty",
+      "event_id": "chatty-3",
+      "timestamp": "2026-08-03T10:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "country": "DE",
+      "timezone": "Europe/Berlin"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "s-chatty",
+      "event_id": "chatty-4",
+      "timestamp": "2026-08-04T10:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "country": "DE",
+      "timezone": "Europe/Berlin"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "s-chatty",
+      "event_id": "chatty-5",
+      "timestamp": "2026-08-05T10:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "country": "DE",
+      "timezone": "Europe/Berlin"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "s-chatty",
+      "event_id": "chatty-6",
+      "timestamp": "2026-08-06T10:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "country": "DE",
+      "timezone": "Europe/Berlin"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "s-quiet",
+      "event_id": "quiet-1",
+      "timestamp": "2026-08-08T10:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "country": "FR",
+      "timezone": "Europe/Paris"
+    }
+  ],
+  "spec": {
+    "source": "arrival_stream",
+    "verdict_filter": "none",
+    "unit": "event",
+    "group_by": [
+      "device_cohort"
+    ],
+    "window": {
+      "days": 10,
+      "boundary": "inclusive_exclusive",
+      "clock": "utc"
+    },
+    "require_fields": [],
+    "aggregate": "hhi",
+    "min_units": 2
+  },
+  "expect": {
+    "unreachable": false,
+    "groups": [
+      {
+        "key": "Chrome|Linux|desktop|en-US|1920x1080",
+        "units": 6,
+        "value": 0.7222222222222222
+      }
+    ]
+  }
+}

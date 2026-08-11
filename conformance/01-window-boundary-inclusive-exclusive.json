@@ -1,0 +1,101 @@
+{
+  "name": "window boundary: inclusive at the start, exclusive at the end",
+  "why": "An adapter that renders the window with the wrong end open silently gains or loses a whole day of substrate at each edge. On a ninety-day statistic that is invisible in every number except the one that matters, and two adapters disagreeing by one row at a boundary will produce different verdicts on the same data forever.",
+  "now": "2026-08-11T00:00:00Z",
+  "observations": [
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "s-before",
+      "event_id": "s-before-23:59:59",
+      "timestamp": "2026-07-31T23:59:59Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "timezone": "UTC"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "s-at-from",
+      "event_id": "s-at-from-00:00:00",
+      "timestamp": "2026-08-01T00:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "timezone": "Europe/Brussels"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "s-inside",
+      "event_id": "s-inside-12:00:00",
+      "timestamp": "2026-08-05T12:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "timezone": "Asia/Karachi"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "s-at-now",
+      "event_id": "s-at-now-00:00:00",
+      "timestamp": "2026-08-11T00:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "timezone": "Asia/Tokyo"
+    }
+  ],
+  "spec": {
+    "source": "arrival_stream",
+    "verdict_filter": "none",
+    "unit": "event",
+    "group_by": [
+      "site"
+    ],
+    "window": {
+      "days": 10,
+      "boundary": "inclusive_exclusive",
+      "clock": "utc"
+    },
+    "require_fields": [],
+    "aggregate": "distinct_count",
+    "min_units": 1
+  },
+  "expect": {
+    "unreachable": false,
+    "groups": [
+      {
+        "key": "site-1",
+        "units": 2,
+        "value": 2.0,
+        "sessions": [
+          "site-1|s-at-from",
+          "site-1|s-inside"
+        ]
+      }
+    ]
+  }
+}

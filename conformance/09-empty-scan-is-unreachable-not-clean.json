@@ -1,0 +1,26 @@
+{
+  "name": "the empty scan",
+  "why": "No observations at all. The result is not 'clean' \u2014 it is UNREACHABLE, because no bucket could have reached the floor. An adapter that reports a comfortable zero on an empty substrate is the failure mode behind every rule that has quietly stopped matching.",
+  "now": "2026-08-11T00:00:00Z",
+  "observations": [],
+  "spec": {
+    "source": "arrival_stream",
+    "verdict_filter": "none",
+    "unit": "event",
+    "group_by": [
+      "site"
+    ],
+    "window": {
+      "days": 10,
+      "boundary": "inclusive_exclusive",
+      "clock": "utc"
+    },
+    "require_fields": [],
+    "aggregate": "hhi",
+    "min_units": 5
+  },
+  "expect": {
+    "unreachable": true,
+    "groups": []
+  }
+}

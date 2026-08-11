@@ -1,0 +1,112 @@
+{
+  "name": "the same substrate WITHOUT require_fields keeps every row",
+  "why": "The drop is a consequence of the rule DECLARING that it needs a resolvable zone, not a property of the scanner. Without this half, an adapter that drops unresolvable zones unconditionally passes the previous vector while silently narrowing every other rule's substrate. Five rows survive and the distinct-zone count is four, because the empty zone and the absent zone are the same value once read.",
+  "now": "2026-08-11T00:00:00Z",
+  "observations": [
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "tz-modern",
+      "event_id": "tz-1",
+      "timestamp": "2026-08-03T10:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "timezone": "Europe/Brussels"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "tz-legacy",
+      "event_id": "tz-2",
+      "timestamp": "2026-08-03T11:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "timezone": "Asia/Calcutta"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "tz-bogus",
+      "event_id": "tz-3",
+      "timestamp": "2026-08-03T12:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "timezone": "Mars/Phobos"
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "tz-empty",
+      "event_id": "tz-4",
+      "timestamp": "2026-08-03T13:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080",
+      "timezone": ""
+    },
+    {
+      "site_id": "site-1",
+      "owner_id": "org-1",
+      "first_party": false,
+      "session_id": "tz-absent",
+      "event_id": "tz-5",
+      "timestamp": "2026-08-03T14:00:00Z",
+      "arrival": "accepted",
+      "event_name": "pageview",
+      "browser": "Chrome",
+      "os": "Linux",
+      "device_type": "desktop",
+      "language": "en-US",
+      "screen_resolution": "1920x1080"
+    }
+  ],
+  "spec": {
+    "source": "arrival_stream",
+    "verdict_filter": "none",
+    "unit": "event",
+    "group_by": [
+      "site"
+    ],
+    "window": {
+      "days": 10,
+      "boundary": "inclusive_exclusive",
+      "clock": "utc"
+    },
+    "require_fields": [],
+    "aggregate": "distinct_count",
+    "min_units": 1
+  },
+  "expect": {
+    "unreachable": false,
+    "groups": [
+      {
+        "key": "site-1",
+        "units": 5,
+        "value": 4.0
+      }
+    ]
+  }
+}

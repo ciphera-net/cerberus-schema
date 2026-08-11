@@ -1,0 +1,43 @@
+# Routes to the in-cluster Kubernetes agent (`!runner=k8s` is MANDATORY there).
+labels:
+  runner: k8s
+
+when:
+  - event: push
+    branch: main
+  - event: pull_request
+  - event: tag
+
+steps:
+  contract:
+    image: golang:1.25
+    # Resources are REQUIRED on this backend: a step with none is QoS BestEffort and is the first
+    # thing evicted under node memory pressure, which presents as a failure with zero test output.
+    backend_options:
+      kubernetes:
+        resources:
+          requests: { memory: 512Mi, cpu: 250m }
+          limits: { memory: 2Gi }
+    commands:
+      - test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+      - go vet ./...
+      # * The whole suite. These tests ARE the contract:
+      # *   TestConformanceVectors            — the reference implements what the grammar says
+      # *   TestDedupUnitVectorsActuallyDisagree — the pair that covers the unit still straddles
+      # *   TestScanSpecCannotExpressCrossTenantMembership — no (fingerprint, site) grouping exists
+      # *   TestPublishesShapesNeverNumbers   — no threshold, list, prefix or corpus row got in
+      # *   TestContractIsAdditiveOnly        — nothing was removed or renamed
+      # *   TestPackSchemaEnumsMatchTheGoGrammar — the JSON schema and the Go types agree
+      - go test -v ./...
+      # * A second, INDEPENDENT check that the module has no dependencies. The import scanner in
+      # * TestNoNonStdlibImports reads source files; this reads the resolved build graph, so a
+      # * dependency introduced through go.mod alone is still caught.
+      - |
+        # A stdlib import path's first segment never contains a dot, so a dot is the test for
+        # "external" — but our own module path has one too, which is why it is excluded explicitly
+        # rather than by counting.
+        external=$(go list -deps . | grep '\.' | grep -v '^github.com/ciphera-net/cerberus-schema' || true)
+        if [ -n "$external" ]; then
+          echo "cerberus-schema pulled in non-stdlib packages:"; echo "$external"; exit 1
+        fi
+        echo "ok  zero non-stdlib dependencies"
