@@ -14,7 +14,7 @@ when:
 
 steps:
   contract:
-    image: registry.ops.ciphera.net/mirror/docker.io/library/golang:1.25-54b6b88db6fe@sha256:54b6b88db6fe375c6676625d87d668273f85c6d09153635d0cbba89cba7a207a
+    image: registry.ops.ciphera.net/mirror/docker.io/library/golang:1.26-6327cb290853@sha256:6327cb290853a5d13091c436b88259b4f35ff70e49b1f8d9e5d1dd1757e9c6ba
     # Resources are REQUIRED on this backend: a step with none is QoS BestEffort and is the first
     # thing evicted under node memory pressure, which presents as a failure with zero test output.
     backend_options:
